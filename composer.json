@@ -1,0 +1,23 @@
+{
+  "name": "firmaprofesional/curl",
+  "type": "library",
+  "description": "curl wrapper",
+  "keywords": ["curl","firmaprofesional"],
+  "homepage": "https://github.com/firmaprofesional/curl",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Dev Team",
+      "email": "tecnico@firmaprofesional.com"
+    }
+  ],
+  "autoload": {
+    "psr-0": {"FP\\": "src/"}
+  },
+  "require": {
+    "apache/log4php": "~2.3"
+  },
+  "require-dev": {
+    "phpunit/phpunit": "~4.6"
+  }
+}

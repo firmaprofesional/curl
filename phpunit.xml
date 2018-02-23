@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit bootstrap="./vendor/autoload.php"
+         backupGlobals="false"
+         backupStaticAttributes="false"
+         colors="true"
+         convertErrorsToExceptions="true"
+         convertNoticesToExceptions="true"
+         convertWarningsToExceptions="true"
+         processIsolation="false"
+         stopOnFailure="false"
+         syntaxCheck="false" >
+
+    <testsuites>
+        <testsuite name="curl">
+            <directory>./src/FP/CURL/Tests/</directory>
+        </testsuite>
+    </testsuites>
+
+    <filter>
+        <whitelist>
+            <directory>./src</directory>
+            <exclude>
+                <directory>./src/FP/CURL/Domain/Exception</directory>
+                <directory>./src/FP/CURL/Infrastructure/Curl</directory>
+                <directory>./src/FP/Tests</directory>
+            </exclude>
+        </whitelist>
+    </filter>
+</phpunit>
