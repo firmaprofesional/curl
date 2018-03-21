@@ -31,13 +31,11 @@ class CurlService
      */
     public function send()
     {
-        $logger = \Logger::getLogger(__METHOD__);
 
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->curlConfig->curlUrl());
 
         if (null !== $this->curlConfig->method()) {
-            $logger->debug('cURL: set method');
             curl_setopt($ch, $this->curlConfig->method(), true);
         }
 
@@ -49,37 +47,30 @@ class CurlService
             curl_setopt($ch, CURLOPT_INFILESIZE, filesize($this->curlConfig->data()));
         }
 
-        if ($this->curlConfig->data()) {
-            $logger->debug('cURL: set data');
+        if ($this->curlConfig->method() !== CURLOPT_PUT && $this->curlConfig->data()) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $this->curlConfig->data());
         }
 
-        //------------- CERTIFICADOS
+        //------------- CERTIFICATES
         if ($this->curlConfig->accessCert()) {
-            $logger->debug('cURL: set certificate');
             curl_setopt($ch, CURLOPT_SSLCERT, $this->curlConfig->accessCert());
         }
         if ($this->curlConfig->accessKey()) {
-            $logger->debug('cURL: set key');
             curl_setopt($ch, CURLOPT_SSLKEY, $this->curlConfig->accessKey());
         }
         if ($this->curlConfig->accessCertPassword()) {
-            $logger->debug('cURL: set certpassword');
             curl_setopt($ch, CURLOPT_SSLCERTPASSWD, $this->curlConfig->accessCertPassword());
         }
         if ($this->curlConfig->accessCACert()) {
-            $logger->debug('cURL: set cacert');
             curl_setopt($ch, CURLOPT_CAINFO, $this->curlConfig->accessCACert());
         }
         //--------------------------
 
         if ($this->curlConfig->username()) {
-            $logger->debug('cURL: set password');
             curl_setopt($ch, CURLOPT_USERPWD, $this->curlConfig->username() . ':' . $this->curlConfig->userPassword());
         }
 
         if ($this->curlConfig->httpHeader()) {
-            $logger->debug('cURL: set header');
             curl_setopt($ch, CURLOPT_HTTPHEADER, $this->curlConfig->httpHeader());
         }
 
