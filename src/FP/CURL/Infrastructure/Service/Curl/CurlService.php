@@ -36,7 +36,6 @@ class CurlService
         curl_setopt($ch, CURLOPT_URL, $this->curlConfig->curlUrl());
 
         if (null !== $this->curlConfig->method()) {
-            $logger->debug('cURL: set method');
             switch ($this->curlConfig->method()) {
                 case 'DELETE':
                     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
