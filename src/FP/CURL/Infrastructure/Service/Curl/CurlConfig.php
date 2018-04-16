@@ -202,6 +202,14 @@ class CurlConfig
 
         return $this;
     }
+    
+    /**
+     * @return CurlConfig
+     */
+    public function setMethodDELETE() {
+        $this->method = 'DELETE';
+        return $this;
+    }
 
     /**
      * @return string
