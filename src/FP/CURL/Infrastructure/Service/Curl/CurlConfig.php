@@ -188,8 +188,7 @@ class CurlConfig
      */
     public function setMethodPUT()
     {
-        $this->method = CURLOPT_PUT;
-
+        $this->method = 'PUT';
         return $this;
     }
 
@@ -199,7 +198,6 @@ class CurlConfig
     public function setMethodPOST()
     {
         $this->method = CURLOPT_POST;
-
         return $this;
     }
     
