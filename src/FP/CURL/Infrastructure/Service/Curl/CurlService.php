@@ -51,6 +51,7 @@ class CurlService
             if (is_array($this->curlConfig->data())) {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($this->curlConfig->data()));
             } else {
+                curl_setopt($ch, CURLOPT_PUT, 1);
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_INFILE, fopen($this->curlConfig->data(), 'r'));
                 curl_setopt($ch, CURLOPT_INFILESIZE, filesize($this->curlConfig->data()));
