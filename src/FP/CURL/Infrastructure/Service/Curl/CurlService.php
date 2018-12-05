@@ -38,6 +38,7 @@ class CurlService
             switch ($this->curlConfig->method()) {
                 case 'DELETE':
                 case 'PUT':
+                case 'GET':
                     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->curlConfig->method());
                     break;
                 default:
