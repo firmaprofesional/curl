@@ -31,7 +31,7 @@ class CurlConfig
     /**
      * @var string
      */
-    private $method;
+    private $method = 'GET';
     /**
      * @var string
      */
