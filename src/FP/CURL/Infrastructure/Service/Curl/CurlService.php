@@ -40,6 +40,9 @@ class CurlService
                 case 'DELETE':
                     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
                     break;
+                case 'PATCH':
+                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+                    break;
                 default:
                     curl_setopt($ch, $this->curlConfig->method(), true);
                     break;
@@ -48,10 +51,14 @@ class CurlService
 
         if ($this->curlConfig->method() === CURLOPT_PUT) {
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
             curl_setopt($ch, CURLOPT_PUT, 1);
-            curl_setopt($ch, CURLOPT_INFILE, fopen($this->curlConfig->data(), 'r'));
-            curl_setopt($ch, CURLOPT_INFILESIZE, filesize($this->curlConfig->data()));
+            if (is_string($this->curlConfig->data()) && file_exists($this->curlConfig->data())) {
+                curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
+                curl_setopt($ch, CURLOPT_INFILE, fopen($this->curlConfig->data(), 'r'));
+                curl_setopt($ch, CURLOPT_INFILESIZE, filesize($this->curlConfig->data()));
+            } else {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($this->curlConfig->data()));
+            }
         }
 
         if ($this->curlConfig->method() !== CURLOPT_PUT && $this->curlConfig->data()) {
