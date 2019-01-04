@@ -33,15 +33,13 @@ class CurlService
     {
 
         $ch = curl_init();
-        curl_setopt($ch, CURLOPT_URL, $this->curlConfig->curlUrl());
 
         if (null !== $this->curlConfig->method()) {
             switch ($this->curlConfig->method()) {
                 case 'DELETE':
-                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'DELETE');
-                    break;
-                case 'PATCH':
-                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, 'PATCH');
+                case 'PUT':
+                case 'GET':
+                    curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->curlConfig->method());
                     break;
                 default:
                     curl_setopt($ch, $this->curlConfig->method(), true);
@@ -49,19 +47,21 @@ class CurlService
             }
         }
 
-        if ($this->curlConfig->method() === CURLOPT_PUT) {
-            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
-            curl_setopt($ch, CURLOPT_PUT, 1);
-            if (is_string($this->curlConfig->data()) && file_exists($this->curlConfig->data())) {
+        if ($this->curlConfig->method() === 'PUT') {
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+            if (is_array($this->curlConfig->data())) {
+                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($this->curlConfig->data()));
+            } else if (file_exists($this->curlConfig->data())) {
+                curl_setopt($ch, CURLOPT_PUT, 1);
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_INFILE, fopen($this->curlConfig->data(), 'r'));
                 curl_setopt($ch, CURLOPT_INFILESIZE, filesize($this->curlConfig->data()));
             } else {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($this->curlConfig->data()));
+                curl_setopt($ch, CURLOPT_POSTFIELDS, $this->curlConfig->data());
             }
         }
 
-        if ($this->curlConfig->method() !== CURLOPT_PUT && $this->curlConfig->data()) {
+        if ($this->curlConfig->method() !== 'PUT' && $this->curlConfig->data()) {
             curl_setopt($ch, CURLOPT_POSTFIELDS, $this->curlConfig->data());
         }
 
@@ -88,6 +88,7 @@ class CurlService
             curl_setopt($ch, CURLOPT_HTTPHEADER, $this->curlConfig->httpHeader());
         }
 
+        curl_setopt($ch, CURLOPT_URL, $this->curlConfig->curlUrl());
         curl_setopt($ch, CURLOPT_HTTP_VERSION, CURL_HTTP_VERSION_1_1);
         curl_setopt($ch, CURLOPT_TIMEOUT, $this->curlConfig->timeout());
         curl_setopt($ch, CURLOPT_MAXREDIRS, 10);
@@ -104,9 +105,11 @@ class CurlService
 
         $result = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $errno = curl_errno($ch);
+        curl_close($ch);
 
-        if (curl_errno($ch)) {
-            throw new CurlException('ERROR cURL (' . curl_error($ch) . ')', $httpCode);
+        if ($errno) {
+            throw new CurlException('ERROR cURL (' . $errno . ')', $httpCode);
         }
 
         if ($httpCode >= 400) {
