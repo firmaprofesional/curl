@@ -25,7 +25,7 @@ class CurlService
      *
      * @codeCoverageIgnore
      *
-     * @throws \FP\CURL\Domain\Exception\ServerException
+     * @throws ServerException
      *
      * @return mixed
      */
@@ -39,6 +39,7 @@ class CurlService
                 case 'DELETE':
                 case 'PUT':
                 case 'GET':
+                case 'PATCH':
                     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->curlConfig->method());
                     break;
                 default:
@@ -47,17 +48,20 @@ class CurlService
             }
         }
 
+        if ($this->curlConfig->method() === 'PATCH') {
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->curlConfig->data());
+        }
+
         if ($this->curlConfig->method() === 'PUT') {
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             if (is_array($this->curlConfig->data())) {
                 curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query($this->curlConfig->data()));
-            } else if (file_exists($this->curlConfig->data())) {
+            } else {
                 curl_setopt($ch, CURLOPT_PUT, 1);
                 curl_setopt($ch, CURLOPT_BINARYTRANSFER, 1);
                 curl_setopt($ch, CURLOPT_INFILE, fopen($this->curlConfig->data(), 'r'));
                 curl_setopt($ch, CURLOPT_INFILESIZE, filesize($this->curlConfig->data()));
-            } else {
-                curl_setopt($ch, CURLOPT_POSTFIELDS, $this->curlConfig->data());
             }
         }
 

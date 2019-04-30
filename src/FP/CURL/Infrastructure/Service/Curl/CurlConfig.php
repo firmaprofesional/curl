@@ -195,12 +195,21 @@ class CurlConfig
     /**
      * @return CurlConfig
      */
+    public function setMethodPATCH()
+    {
+        $this->method = 'PATCH';
+        return $this;
+    }
+
+    /**
+     * @return CurlConfig
+     */
     public function setMethodPOST()
     {
         $this->method = CURLOPT_POST;
         return $this;
     }
-    
+
     /**
      * @return CurlConfig
      */
