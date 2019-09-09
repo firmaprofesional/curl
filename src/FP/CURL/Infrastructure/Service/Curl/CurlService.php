@@ -25,7 +25,7 @@ class CurlService
      *
      * @codeCoverageIgnore
      *
-     * @throws \FP\CURL\Domain\Exception\ServerException
+     * @throws ServerException
      *
      * @return mixed
      */
@@ -39,12 +39,18 @@ class CurlService
                 case 'DELETE':
                 case 'PUT':
                 case 'GET':
+                case 'PATCH':
                     curl_setopt($ch, CURLOPT_CUSTOMREQUEST, $this->curlConfig->method());
                     break;
                 default:
                     curl_setopt($ch, $this->curlConfig->method(), true);
                     break;
             }
+        }
+
+        if ($this->curlConfig->method() === 'PATCH') {
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+            curl_setopt($ch, CURLOPT_POSTFIELDS, $this->curlConfig->data());
         }
 
         if ($this->curlConfig->method() === 'PUT') {
