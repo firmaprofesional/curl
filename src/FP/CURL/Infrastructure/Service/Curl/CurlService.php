@@ -15,25 +15,133 @@ class CurlService
     /**
      * @param CurlConfig $curlConfig
      */
-    public function configure(CurlConfig $curlConfig)
+    public function configure(CurlConfig $curlConfig): void
     {
         $this->curlConfig = $curlConfig;
     }
 
     /**
-     * @throws CurlException
-     *
      * @codeCoverageIgnore
      *
+     * @return bool|string
+     * @throws CurlException
      * @throws ServerException
-     *
-     * @return mixed
      */
     public function send()
     {
+        $ch =  $this->prepareCurlHandler(curl_init());
 
-        $ch = curl_init();
+        $result = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $errno = curl_errno($ch);
+        curl_close($ch);
 
+        if ($errno) {
+            throw new CurlException('ERROR cURL (' . $errno . ')', $httpCode);
+        }
+
+        if ($httpCode >= 400) {
+            throw new ServerException($result, $httpCode);
+        }
+
+        return $result;
+    }
+
+
+    /**
+     * @codeCoverageIgnore
+     *
+     * @param array $curlDataList
+     * @param string|null $token
+     * @return array|string|null
+     * @throws CurlException
+     * @throws ServerException
+     */
+    public function multipleParallelSend(array $curlDataList, ?string $token = null)
+    {
+        $mh = curl_multi_init();
+        $chList = [];
+        foreach ($curlDataList as $i => $curlData) {
+            $curlConfig = new CurlConfig();
+            if (array_key_exists('url', $curlData)) {
+                $curlConfig->setCurlUrl($curlData['url']);
+            }
+            if (array_key_exists('method', $curlData)) {
+                switch ($curlData['method']) {
+                    case 'DELETE':
+                        $curlConfig->setMethodDELETE();
+                        break;
+                    case 'PUT':
+                        $curlConfig->setMethodPUT();
+                        break;
+                    case 'POST':
+                        $curlConfig->setMethodPOST();
+                        break;
+                    case 'PATCH':
+                        $curlConfig->setMethodPATCH();
+                        break;
+                }
+            }
+            if (array_key_exists('data', $curlData)) {
+                $curlConfig->setData($curlData['data']);
+            }
+            if ($token !== null) {
+                $curlConfig->setHttpHeader(
+                    array(
+                        'Authorization: Bearer ' . $token,
+                        'Content-Type: application/json'
+                    )
+                );
+            }
+            $this->configure($curlConfig);
+            $chList[$i] = $this->prepareCurlHandler(curl_init());
+            curl_multi_add_handle($mh, $chList[$i]);
+        }
+        $active = null;
+        do {
+            $mrc = curl_multi_exec($mh, $active);
+        } while ($mrc === CURLM_CALL_MULTI_PERFORM);
+
+        while ($active && $mrc === CURLM_OK) {
+            if (curl_multi_select($mh) !== -1) {
+                do {
+                    $mrc = curl_multi_exec($mh, $active);
+                } while ($mrc === CURLM_CALL_MULTI_PERFORM);
+            }
+        }
+        $result = [];
+        $errno = curl_multi_errno($mh);
+        $httpCode = null;
+        $hasServerError = false;
+        foreach ($chList as $ch) {
+            $result[] = curl_multi_getcontent($ch);
+            $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+            if ($httpCode >= 400) {
+                $result = curl_multi_getcontent($ch);
+                $hasServerError = true;
+                break;
+            }
+            curl_multi_remove_handle($mh, $ch);
+        }
+        curl_multi_close($mh);
+
+        if ($errno) {
+            throw new CurlException('ERROR cURL (' . $errno . ')', $httpCode);
+        }
+
+        if ($hasServerError) {
+            throw new ServerException($result, $httpCode);
+        }
+
+        return $result;
+    }
+
+    /**
+     * @param $ch
+     * @return mixed
+     */
+    private function prepareCurlHandler($ch)
+    {
         if (null !== $this->curlConfig->method()) {
             switch ($this->curlConfig->method()) {
                 case 'DELETE':
@@ -109,19 +217,6 @@ class CurlService
             curl_setopt($ch, CURLOPT_STDERR, $verbose);
         }
 
-        $result = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-        $errno = curl_errno($ch);
-        curl_close($ch);
-
-        if ($errno) {
-            throw new CurlException('ERROR cURL (' . $errno . ')', $httpCode);
-        }
-
-        if ($httpCode >= 400) {
-            throw new ServerException($result, $httpCode);
-        }
-
-        return $result;
+        return $ch;
     }
 }
