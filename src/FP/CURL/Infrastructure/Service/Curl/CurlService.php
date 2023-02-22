@@ -47,52 +47,19 @@ class CurlService
         return $result;
     }
 
-
     /**
      * @codeCoverageIgnore
      *
-     * @param array $curlDataList
-     * @param string|null $token
+     * @param CurlConfig[] $curlConfigs
      * @return array|string|null
      * @throws CurlException
      * @throws ServerException
      */
-    public function multipleParallelSend(array $curlDataList, ?string $token = null)
+    public function multipleParallelSend(array $curlConfigs)
     {
         $mh = curl_multi_init();
         $chList = [];
-        foreach ($curlDataList as $i => $curlData) {
-            $curlConfig = new CurlConfig();
-            if (array_key_exists('url', $curlData)) {
-                $curlConfig->setCurlUrl($curlData['url']);
-            }
-            if (array_key_exists('method', $curlData)) {
-                switch ($curlData['method']) {
-                    case 'DELETE':
-                        $curlConfig->setMethodDELETE();
-                        break;
-                    case 'PUT':
-                        $curlConfig->setMethodPUT();
-                        break;
-                    case 'POST':
-                        $curlConfig->setMethodPOST();
-                        break;
-                    case 'PATCH':
-                        $curlConfig->setMethodPATCH();
-                        break;
-                }
-            }
-            if (array_key_exists('data', $curlData)) {
-                $curlConfig->setData($curlData['data']);
-            }
-            if ($token !== null) {
-                $curlConfig->setHttpHeader(
-                    array(
-                        'Authorization: Bearer ' . $token,
-                        'Content-Type: application/json'
-                    )
-                );
-            }
+        foreach ($curlConfigs as $i => $curlConfig) {
             $this->configure($curlConfig);
             $chList[$i] = $this->prepareCurlHandler(curl_init());
             curl_multi_add_handle($mh, $chList[$i]);
