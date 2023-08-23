@@ -48,7 +48,7 @@ class CurlConfig
     /**
      * @var int
      */
-    private $timeout = 10;
+    private $timeout = 120;
 
     /**
      * @var bool
