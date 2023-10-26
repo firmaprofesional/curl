@@ -15,7 +15,6 @@
     "psr-0": {"FP\\": "src/"}
   },
   "require": {
-    "apache/log4php": "~2.3",
     "ext-curl": "*"
   },
   "require-dev": {
