@@ -56,6 +56,11 @@ class CurlConfig
     private $verbose = false;
 
     /**
+     * @var bool
+     */
+    private $sendTraceLogId = true;
+
+    /**
      * @return string
      */
     public function curlUrl()
@@ -171,6 +176,18 @@ class CurlConfig
     public function setHttpHeader($httpHeader)
     {
         $this->httpHeader = $httpHeader;
+
+        return $this;
+    }
+
+    /**
+     * @param array $httpHeader
+     *
+     * @return CurlConfig
+     */
+    public function addHttpHeader($httpHeader)
+    {
+        $this->httpHeader = array_merge($httpHeader, $this->httpHeader);
 
         return $this;
     }
@@ -313,5 +330,20 @@ class CurlConfig
         $this->timeout = $timeout;
 
         return $this;
+    }
+
+    public function enableSendTraceLogId(): void
+    {
+        $this->sendTraceLogId = true;
+    }
+
+    public function disableSendTraceLogId(): void
+    {
+        $this->sendTraceLogId = false;
+    }
+
+    public function sendTraceLogId(): bool
+    {
+        return $this->sendTraceLogId;
     }
 }
