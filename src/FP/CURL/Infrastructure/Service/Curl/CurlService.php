@@ -4,6 +4,7 @@ namespace FP\CURL\Infrastructure\Service\Curl;
 
 use FP\CURL\Domain\Exception\CurlException;
 use FP\CURL\Domain\Exception\ServerException;
+use FP\UTILS\Infrastructure\Monolog\Service\TraceLogIdGenerator;
 
 class CurlService
 {
@@ -11,6 +12,13 @@ class CurlService
      * @var CurlConfig
      */
     private $curlConfig;
+
+    private $traceLogIdGenerator;
+
+    public function __construct(?TraceLogIdGenerator $traceLogIdGenerator = null)
+    {
+        $this->traceLogIdGenerator = $traceLogIdGenerator;
+    }
 
     /**
      * @param CurlConfig $curlConfig
@@ -29,6 +37,10 @@ class CurlService
      */
     public function send()
     {
+        if ($this->traceLogIdGenerator instanceof TraceLogIdGenerator && $this->curlConfig->sendTraceLogId()) {
+            $this->curlConfig->addHttpHeader(['traceLogId: ' . $this->traceLogIdGenerator->getTraceLogId()]);
+        }
+
         $ch =  $this->prepareCurlHandler(curl_init());
 
         $result = curl_exec($ch);
