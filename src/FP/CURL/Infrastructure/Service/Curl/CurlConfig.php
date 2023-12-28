@@ -27,7 +27,7 @@ class CurlConfig
     /**
      * @var array
      */
-    private $httpHeader;
+    private $httpHeader = [];
     /**
      * @var string
      */
