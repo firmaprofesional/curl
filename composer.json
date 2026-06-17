@@ -1,4 +1,5 @@
 {
+  "abandoned": true,
   "name": "firmaprofesional/curl",
   "type": "library",
   "description": "curl wrapper",
